@@ -42,7 +42,7 @@ class Display extends React.Component {
          console.log(this.state);
       }
       let backNavFunc = (e) => {
-         let dir = e.state.index > this.state.index ? 1 : -1;
+         let dir = e.index !== undefined || e.state.index > this.state.index ? 1 : -1;
          this.setState({index : this.state.index + dir});  
       }
       const initalPage = (<Home navFunc={navFunc}/>);
