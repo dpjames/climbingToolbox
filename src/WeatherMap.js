@@ -75,7 +75,7 @@ class LayerToggleButton extends React.Component {
       );
    }
 }
-class WeatherMap extends React.Component {
+class Header extends React.Component {
    constructor(props){
       super(props);
       let keyCount = 0;
@@ -89,11 +89,20 @@ class WeatherMap extends React.Component {
          ],
       }
    }
+   render() {
+      return (
+         <div id="header">
+            <ButtonBar buttons={this.state.buttons}/>
+            <InfoPanel />
+         </div>
+      )
+   }
+}
+class WeatherMap extends React.Component {
    render(){
       return(
          <div id="mainContent">
-            <ButtonBar buttons={this.state.buttons}/>
-            <InfoPanel />
+            <Header />
             <MapContainer />
          </div>
       );
