@@ -42,9 +42,14 @@ class Display extends React.Component {
          console.log(this.state);
       }
       let backNavFunc = (e) => {
-         debugger;
          console.log(this.state);
-         let dir = e.index === null || e.state.index > this.state.index ? 1 : -1;
+         console.log(e);
+         let dir = -1; 
+         if(e.state === undefined || e.state === null){
+            dir = -1; 
+         } else {
+            dir = e.state.index > this.state.index ? 1 : -1;
+         }
          console.log(this.state);
          this.setState({index : this.state.index + dir});  
       }
