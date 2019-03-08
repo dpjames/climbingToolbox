@@ -42,7 +42,10 @@ class Display extends React.Component {
          console.log(this.state);
       }
       let backNavFunc = (e) => {
-         let dir = e.index !== undefined || e.state.index > this.state.index ? 1 : -1;
+         debugger;
+         console.log(this.state);
+         let dir = e.index === null || e.state.index > this.state.index ? 1 : -1;
+         console.log(this.state);
          this.setState({index : this.state.index + dir});  
       }
       const initalPage = (<Home navFunc={navFunc}/>);
@@ -53,6 +56,7 @@ class Display extends React.Component {
       window.addEventListener("popstate", (e) => backNavFunc(e));
    }
    render(){
+      console.log(this.state);
       return this.state.history[this.state.index]
    }
 }
