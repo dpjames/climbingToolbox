@@ -10,26 +10,33 @@ class Test extends React.Component {
    }
 }
 class Home extends React.Component {
-   constructor(props) {
+   render(){
+      return (
+         <div> hello main page </div>
+      );
+   }
+}
+class Display extends React.Component {
+   
+   
+   constructor(props){
       super(props);
+      this.navFunc = this.navFunc.bind(this);
+      this.backNavFunc = this.backNavFunc.bind(this);
+      const initalPage = (<Home navFunc={this.navFunc}/>);
       let id = 0;
       this.state = {
+         history : [initalPage],
+         index : 0,
          pages : [
             <WeatherMap key={id++} name="weather map"/>,
             <Test key={id++} name="Test page"/>,
          ]
       }
+      window.addEventListener("popstate", (e) => this.backNavFunc(e));
    }
-   render(){
-      return (
-         <NavBar navFunc={this.props.navFunc} pages={this.state.pages} />
-      );
-   }
-}
-class Display extends React.Component {
-   constructor(props){
-      super(props);
-      let navFunc = (p) => {
+
+   navFunc(p){
          window.history.pushState({index : this.state.index + 1}, p.props.name);
          if(this.state.index + 1 < this.state.history.length 
                && this.state.history[this.state.index + 1] == p){
@@ -39,30 +46,24 @@ class Display extends React.Component {
             this.state.history.push(p);
             this.setState({history : this.state.history, index : this.state.index + 1}) ;
          }
-         console.log(this.state);
-      }
-      let backNavFunc = (e) => {
-         console.log(this.state);
-         console.log(e);
+   }
+   backNavFunc(e) {
          let dir = -1; 
          if(e.state === undefined || e.state === null){
             dir = -1; 
          } else {
             dir = e.state.index > this.state.index ? 1 : -1;
          }
-         console.log(this.state);
          this.setState({index : this.state.index + dir});  
-      }
-      const initalPage = (<Home navFunc={navFunc}/>);
-      this.state = {
-         history : [initalPage],
-         index : 0
-      }
-      window.addEventListener("popstate", (e) => backNavFunc(e));
    }
+
    render(){
-      console.log(this.state);
-      return this.state.history[this.state.index]
+      return (
+         <div>
+            <NavBar navFunc={this.navFunc} pages={this.state.pages} />
+            {this.state.history[this.state.index]}
+         </div>
+      )
    }
 }
 ReactDOM.render(

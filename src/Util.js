@@ -1,4 +1,5 @@
 import React from 'react';
+
 class Button extends React.Component {
    render(){
       let classes = "button " + this.props.extraClass;
@@ -7,11 +8,19 @@ class Button extends React.Component {
       )
    }
 }
-
 class ButtonBar extends React.Component {
    render(){
       return (
-         <div id="toolBar">
+         <div className="buttonBar">
+            {this.props.buttons}
+         </div>
+      );
+   }
+}
+class ButtonStack extends React.Component {
+   render(){
+      return (
+         <div className="buttonStack">
             {this.props.buttons}
          </div>
       );
@@ -33,5 +42,5 @@ class NavBar extends React.Component {
       return (<ButtonBar buttons={this.state.buttons} />)
    }
 }
-export { ButtonBar, Button, NavBar }
+export {ButtonStack, ButtonBar, Button, NavBar }
        

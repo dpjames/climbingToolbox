@@ -9,8 +9,9 @@ import {Vector as VectorLayer, Tile} from 'ol/layer'
 import {Vector, XYZ} from 'ol/source'
 import {GeoJSON} from 'ol/format'
 import {bbox} from 'ol/loadingstrategy'
+import {defaults as defaultControls} from 'ol/control'
 
-import {ButtonBar, Button} from './Util.js'
+import {ButtonStack, Button} from './Util.js'
 
 let DAY = 0;
 let climbLayer = createClimbLayer();
@@ -83,26 +84,50 @@ class Header extends React.Component {
          buttons : [
             (<Button key={keyCount++} onClick={() => moveDate(-1)} text="prev 12 hrs" />),
             (<Button key={keyCount++} onClick={() => moveDate(1)} text="next 12 hrs" />),
-            (<LayerToggleButton layer={peaksLayer} on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks layer" />),
-            (<LayerToggleButton layer={climbLayer} on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb layer" />),
-            (<LayerToggleButton layer={weatherLayer} on={false} key={keyCount++} handler={toggleWeather} text="toggle weather overlay" />)
+            (<LayerToggleButton layer={peaksLayer} on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
+            (<LayerToggleButton layer={climbLayer} on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
+            (<LayerToggleButton layer={weatherLayer} on={false} key={keyCount++} handler={toggleWeather} text="toggle weather" />)
          ],
       }
    }
+   
    render() {
       return (
          <div id="header">
-            <ButtonBar buttons={this.state.buttons}/>
+            <ButtonStack buttons={this.state.buttons}/>
             <InfoPanel />
          </div>
       )
+   }
+}
+class WeatherControls extends React.Component {
+   constructor(props){
+      super(props);
+      this.state = {
+         showHeader : false
+      }
+      this.toggleHeader = this.toggleHeader.bind(this);
+   }
+   toggleHeader(){
+      let newState = this.state;
+      newState.showHeader = !newState.showHeader;
+      this.setState(newState);
+   }
+   render(){
+      console.log(this.state);
+      return (
+         <div id="weatherContols"> 
+            {this.state.showHeader ? <Header /> : ""}
+            <Button text={this.state.showHeader ? " ^ Hide Controls ^ " : " v Show Controls v "} onClick={() => this.toggleHeader()}/>
+         </div>
+      );
    }
 }
 class WeatherMap extends React.Component {
    render(){
       return(
          <div id="mainContent">
-            <Header />
+            <WeatherControls />
             <MapContainer />
          </div>
       );
@@ -114,7 +139,7 @@ class WeatherMap extends React.Component {
 class MapContainer extends React.Component {
    render(){
       return (
-         <div id="map">this will be the map</div>   
+         <div id="map"></div>   
       );
    }
 }
@@ -260,6 +285,9 @@ function initMap(){
       target:"map",
       layers:layers,
       view:view,
+      controls : defaultControls({
+         zoom : false,
+      }),
    });
 }
 function moveDate(delta){
