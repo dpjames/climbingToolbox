@@ -4,7 +4,7 @@ import './index.css';
 import WeatherMap from './WeatherMap.js';
 import {NavBar} from "./Util.js";
 import {Home} from "./Home.js";
-
+import {BetaMap} from "./BetaMap.js";
 
 class Display extends React.Component {
    
@@ -19,8 +19,9 @@ class Display extends React.Component {
          history : [home],
          index : 0,
          pages : [
-            <Home name="home"/>,
-            <WeatherMap key={id++} name="weather map"/>,
+            <Home key={id++} name="home" />,
+            <WeatherMap key={id++} name="weather map" />,
+            <BetaMap key={id++} name="beta map" />,
          ]
       }
       window.addEventListener("popstate", (e) => this.backNavFunc(e));
