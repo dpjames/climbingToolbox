@@ -27,20 +27,26 @@ class ButtonStack extends React.Component {
    }
 }
 class NavBar extends React.Component {
-   constructor(props) {
-      super(props);
+   render(){
       let id = 0;
       let buttons = []
-      this.props.pages.forEach((p) => {
-         buttons.push(<Button key={id++} onClick={() => this.props.navFunc(p)} text={p.props.name} extraClass=""/>);
+      this.props.pages.forEach((p, i) => {
+         buttons.push(<Button key={id++} onClick={() => this.props.navFunc(p)} text={p.props.name} extraClass={"navButton " + (this.props.active === i ? "nav-active" : "")}/>);
       });
-      this.state = {
-         buttons : buttons
-      }
-   }
-   render(){
-      return (<ButtonBar buttons={this.state.buttons} />)
+      return (
+         <div id="topRow">
+            <TitleBar />
+            <ButtonBar buttons={buttons} />
+         </div>
+      )
    }
 }
-export {ButtonStack, ButtonBar, Button, NavBar }
+class TitleBar extends React.Component {
+   render(){
+      return (
+         <div id="titleBar">CT</div>
+      );
+   }
+}
+export {ButtonStack, ButtonBar, Button, NavBar}
        
