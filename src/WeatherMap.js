@@ -10,17 +10,15 @@ import {Vector, XYZ} from 'ol/source'
 import {GeoJSON} from 'ol/format'
 import {bbox} from 'ol/loadingstrategy'
 import {defaults as defaultControls} from 'ol/control'
-
 import {ButtonStack, Button} from './Util.js'
-
+import Overlay from 'ol/Overlay';
+const GEO_HOST = "http://raspberrypi:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
 let baseLayer = createTopoLayer();
 let weatherLayer = createWeatherLayer();
 let peaksLayer = createPeaksLayer();
 let map = undefined;
-
-
 
 class LegendDot extends React.Component{
    render(){
@@ -80,17 +78,22 @@ class Header extends React.Component {
    constructor(props){
       super(props);
       let keyCount = 0;
+      console.log(props);
       this.state = {
          buttons : [
-            (<Button key={keyCount++} onClick={() => moveDate(-1)} text="prev 12 hrs" />),
-            (<Button key={keyCount++} onClick={() => moveDate(1)} text="next 12 hrs" />),
+            (<Button key={keyCount++} onClick={() => this.updateDate(-1)} text="prev 12 hrs" />),
+            (<Button key={keyCount++} onClick={() => this.updateDate(1) } text="next 12 hrs" />),
             (<LayerToggleButton layer={peaksLayer} on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
             (<LayerToggleButton layer={climbLayer} on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
             (<LayerToggleButton layer={weatherLayer} on={false} key={keyCount++} handler={toggleWeather} text="toggle weather" />)
          ],
       }
+      this.updateDate = this.updateDate.bind(this);
    }
-   
+   updateDate(dir){
+      moveDate(dir);
+      this.props.updateCallout({day : DAY});
+   }
    render() {
       return (
          <div id="header">
@@ -114,36 +117,98 @@ class WeatherControls extends React.Component {
       this.setState(newState);
    }
    render(){
-      console.log(this.state);
       return (
          <div id="weatherContols"> 
-            {this.state.showHeader ? <Header /> : ""}
+            {this.state.showHeader ? <Header updateCallout={this.props.updateCallout}/> : ""}
             <Button text={this.state.showHeader ? " ^ Hide Controls ^ " : " v Show Controls v "} onClick={() => this.toggleHeader()}/>
          </div>
       );
    }
 }
 class WeatherMap extends React.Component {
+   constructor(props){
+      super(props);
+      this.updateCallout = this.updateCallout.bind(this);
+   }
+   updateCallout(newState){
+      this.callout.setState(newState);
+   }
    render(){
       return(
          <div id="mainContent">
-            <WeatherControls />
+            <WeatherControls updateCallout={this.updateCallout}/>
             <MapContainer />
+            <MapCallout ref={c => this.callout = c}/>
          </div>
       );
    }
-   componentDidMount(){
-      initMap();
-   }
 }
+
 class MapContainer extends React.Component {
    render(){
       return (
          <div id="map"></div>   
       );
    }
+   componentDidMount(){
+      initMap();
+   }
 }
 
+class MapCallout extends React.Component {
+   constructor(props){
+      super(props);
+      this.state = {
+         weather : "N/A",
+         climb : "N/A",
+         peak : "N/A",
+      }
+      this.updateCallout = this.updateCallout.bind(this);
+   }
+   render(){
+      const convertToClick = (e) => {
+         const evt = new MouseEvent('click', { bubbles: true })
+         evt.stopPropagation = () => {}
+         e.target.dispatchEvent(evt)
+      }
+      return (
+         <div className={this.state.hidden ? "hide" : ""} id="mapCallout" onMouseUp={convertToClick}>
+            <div className="close" onClick={() => this.setState({hidden : true})}>X</div>
+            <div>Weather: {this.state.weather['sfc' + DAY]}</div>
+            <div>Nearest Climb: {this.state.climb}</div>
+            <div>Nearest Peak:  {this.state.peak}</div>
+         </div>
+      )
+   }
+   updateCallout(e){
+      if(e !== undefined){
+         this.state.callout.setPosition(e.coordinate)
+      }
+      let newState = this.state;
+      //this is ugly and repetitve... perhaps refactor to be more functional 
+      let wf  = weatherLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      if(wf !== null){
+         newState.weather = wf.getProperties();
+      }
+      let cf  = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      if(cf !== null){
+         newState.climb = cf.getProperties().NAME;
+      }
+      let pf  = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      if(pf !== null){
+         newState.peak = pf.getProperties().NAME;
+      }
+      newState.hidden = false;
+      this.setState(newState);
+   }
+   componentDidMount(){
+      let newState = this.state;
+      newState.callout = new Overlay({element : document.getElementById('mapCallout')});
+      this.setState(newState);
+      map.addOverlay(this.state.callout);
+      map.on('click', e => this.updateCallout(e));
+   }
+}
 
 
 
@@ -152,7 +217,6 @@ class MapContainer extends React.Component {
 
 
 //LOGIC BELOW
-
 function getColorForDescription(desc){
    desc = desc.toLowerCase()
    if(desc.indexOf("snow") > -1 ||
@@ -216,11 +280,12 @@ function climbStyle(f){
 function createClimbLayer(){
    const src = new Vector({
       url:function(extent){
-         return "/geoserver/climbing/climbs/wfs?service=WFS&version=1.1&typename=climbs&request=GetFeature&outputFormat=application/json&srsname=EPSG:3857&bbox="
+         return GEO_HOST + "/geoserver/climbing/climbs/wfs?service=WFS&version=1.1&typename=climbs&request=GetFeature&outputFormat=application/json&srsname=EPSG:3857&bbox="
             +extent.join(",")+",EPSG:3857";
       },
       format: new GeoJSON(),
-      strategy: bbox
+      strategy: bbox,
+      crossOrigin: 'anonymous'
    });
    const climbLayer = new VectorLayer({
       title:"climbs",
@@ -238,7 +303,7 @@ function createWeatherLayer(){
          extent[1]-=bufferY 
          extent[2]+=bufferX
          extent[3]+=bufferY 
-         return "/geoserver/climbing/weather/wfs?service=WFS&version=1.1&typename=weather&request=GetFeature&outputFormat=application/json&srsname=EPSG:3857&bbox="
+         return GEO_HOST + "/geoserver/climbing/weather/wfs?service=WFS&version=1.1&typename=weather&request=GetFeature&outputFormat=application/json&srsname=EPSG:3857&bbox="
             +extent.join(",")+",EPSG:3857";
       },
       format: new GeoJSON(),
@@ -304,7 +369,7 @@ function createPeaksLayer(){
    const src = new Vector({
       format: new GeoJSON(),
       url:function(extent){
-         return "/geoserver/climbing/peaks/wfs?service=WFS&version=1.1&typename=peaks&request=GetFeature&outputFormat=application/json&srsname=EPSG:3857&bbox="
+         return GEO_HOST + "/geoserver/climbing/peaks/wfs?service=WFS&version=1.1&typename=peaks&request=GetFeature&outputFormat=application/json&srsname=EPSG:3857&bbox="
             +extent.join(",")+",EPSG:3857";
       },
       strategy: bbox});

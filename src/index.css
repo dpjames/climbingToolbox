@@ -156,4 +156,18 @@ body {
 .legendLoading {  background-color:rgba(0,0,0,1);}
 .legendUnknown {  background-color:rgba(255,0,0,1);}
 
+.close {
+   color:red;
+   position:absolute;
+   top:3px;
+   right:9px;
+}
+#mapCallout {
+   position : absolute;
+   background-color:rgba(255,255,255,.7);
+   border: 1px solid black;
+   width: 200px;
+   border-radius:10px;
+   padding:10px;
+}
 
