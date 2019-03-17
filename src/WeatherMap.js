@@ -21,7 +21,8 @@ library.add(faArrowRight)
 library.add(faArrowLeft)
 library.add(faTimes)
 
-const GEO_HOST = "http://raspberrypi:8080";
+//const GEO_HOST = "http://raspberrypi:8080";
+const GEO_HOST = "http://66.214.192.84:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
 let baseLayer = createTopoLayer();
