@@ -2,7 +2,9 @@
    --navBarH: 46px;
    --fullH: calc(100vh - var(--navBarH));
 }
-
+.flexFill {
+   flex:1
+}
 #map {
    height:var(--fullH);
    width:100vw;
@@ -70,7 +72,7 @@ body {
    cursor:pointer;
 }
 .button:hover {
-   box-shadow:2px 2px rgba(0,0,0,.2);
+   box-shadow:0px 0px 5px rgba(0,0,0,.2);
 }
 #weatherContols {
    padding:5px;
@@ -161,13 +163,22 @@ body {
    position:absolute;
    top:3px;
    right:9px;
+   width:20px;;
+   height:20px;
+   border:none;
+   padding:0px;
+   margin:0px;
+   height:auto;
+   box-shadow:none !important;
 }
 #mapCallout {
+   white-space:nowrap;
    position : absolute;
-   background-color:rgba(255,255,255,.7);
+   background-color:rgba(255,255,255,.9);
    border: 1px solid black;
-   width: 200px;
    border-radius:10px;
    padding:10px;
+   padding-right:30px;
+   transform: translateX(-100%);
 }
 

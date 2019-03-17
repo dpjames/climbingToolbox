@@ -1,7 +1,7 @@
 import React from 'react';
 import './index.css';
-
 import 'ol/ol.css';
+
 import {Map, View} from 'ol';
 import {Style, Circle, Fill, Stroke} from 'ol/style'
 import {fromLonLat} from 'ol/proj';
@@ -10,8 +10,17 @@ import {Vector, XYZ} from 'ol/source'
 import {GeoJSON} from 'ol/format'
 import {bbox} from 'ol/loadingstrategy'
 import {defaults as defaultControls} from 'ol/control'
-import {ButtonStack, Button} from './Util.js'
+import {ButtonBar, ButtonStack, Button} from './Util.js'
 import Overlay from 'ol/Overlay';
+
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+library.add(faArrowRight)
+library.add(faArrowLeft)
+library.add(faTimes)
+
 const GEO_HOST = "http://raspberrypi:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
@@ -70,25 +79,41 @@ class LayerToggleButton extends React.Component {
    }
    render(){
       return (
-         <Button extraClass={this.state.on ? "on" : "off"} onClick={() => this.props.handler(this, this.props.layer)} text={this.props.text}/>
+         <Button extraClass={this.state.on ? "on" : "off"} onClick={() => this.props.handler(this, this.props.layer)} text={this.props.text} />
+      );
+   }
+}
+class DateControls extends React.Component {
+   constructor(props){
+      super(props);
+      let keyCount = 0;
+      this.state = {
+         buttons : [
+            (<Button key={keyCount++} extraClass="flexFill" onClick={() => this.props.dateFunc(-1)} text={<FontAwesomeIcon icon="arrow-left" /> } />),
+            (<Button key={keyCount++} extraClass="flexFill" onClick={() => this.props.dateFunc(1) } text={<FontAwesomeIcon icon="arrow-right" /> } />),
+         ]
+      }
+   }
+   render(){
+      return (
+         <ButtonBar buttons={this.state.buttons} />
       );
    }
 }
 class Header extends React.Component {
    constructor(props){
       super(props);
+      this.updateDate = this.updateDate.bind(this);
       let keyCount = 0;
       console.log(props);
       this.state = {
          buttons : [
-            (<Button key={keyCount++} onClick={() => this.updateDate(-1)} text="prev 12 hrs" />),
-            (<Button key={keyCount++} onClick={() => this.updateDate(1) } text="next 12 hrs" />),
-            (<LayerToggleButton layer={peaksLayer} on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
-            (<LayerToggleButton layer={climbLayer} on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
+            (<DateControls key={keyCount++} dateFunc={this.updateDate} />),
+            (<LayerToggleButton layer={peaksLayer}   on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
+            (<LayerToggleButton layer={climbLayer}   on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
             (<LayerToggleButton layer={weatherLayer} on={false} key={keyCount++} handler={toggleWeather} text="toggle weather" />)
          ],
       }
-      this.updateDate = this.updateDate.bind(this);
    }
    updateDate(dir){
       moveDate(dir);
@@ -96,7 +121,7 @@ class Header extends React.Component {
    }
    render() {
       return (
-         <div id="header">
+         <div id="header" className={this.props.show ? "" : "hide"}>
             <ButtonStack buttons={this.state.buttons}/>
             <InfoPanel />
          </div>
@@ -107,7 +132,7 @@ class WeatherControls extends React.Component {
    constructor(props){
       super(props);
       this.state = {
-         showHeader : false
+         showHeader : window.screen.width > 600
       }
       this.toggleHeader = this.toggleHeader.bind(this);
    }
@@ -117,9 +142,10 @@ class WeatherControls extends React.Component {
       this.setState(newState);
    }
    render(){
+      console.log(this.state);
       return (
          <div id="weatherContols"> 
-            {this.state.showHeader ? <Header updateCallout={this.props.updateCallout}/> : ""}
+            <Header show={this.state.showHeader} updateCallout={this.props.updateCallout}/>
             <Button text={this.state.showHeader ? " ^ Hide Controls ^ " : " v Show Controls v "} onClick={() => this.toggleHeader()}/>
          </div>
       );
@@ -173,10 +199,12 @@ class MapCallout extends React.Component {
       }
       return (
          <div className={this.state.hidden ? "hide" : ""} id="mapCallout" onMouseUp={convertToClick}>
-            <div className="close" onClick={() => this.setState({hidden : true})}>X</div>
-            <div>Weather: {this.state.weather['sfc' + DAY]}</div>
-            <div>Nearest Climb: {this.state.climb}</div>
-            <div>Nearest Peak:  {this.state.peak}</div>
+            <div className="button close" onClick={() => this.setState({hidden : true})}>
+               <FontAwesomeIcon icon="times" />
+            </div>
+            <div><strong>Weather: </strong>       {this.state.weather['sfc' + DAY]}</div>
+            <div><strong>Nearest Climb: </strong> {this.state.climb}</div>
+            <div><strong>Nearest Peak: </strong>  {this.state.peak}</div>
          </div>
       )
    }
@@ -247,8 +275,7 @@ let staticWeatherStyle = new Style({
    })
 });
 
-
-function weatherStyle(f) {
+function weatherStyle(f, r) {
    const props = f.getProperties();
    const weatherColor = getColorForDescription(props['sfc' + DAY]);
    staticWeatherStyle.getImage().getFill().setColor(weatherColor);
@@ -290,7 +317,8 @@ function createClimbLayer(){
    const climbLayer = new VectorLayer({
       title:"climbs",
       source:src,
-      style : climbStyle
+      style : climbStyle,
+      maxResolution : 400,
    });
    return climbLayer;
 }
@@ -313,7 +341,8 @@ function createWeatherLayer(){
    const weatherlayer = new VectorLayer({
       title:"weather",
       source:src,
-      style : nostyle
+      style : nostyle,
+      maxResolution : 400,
    });
    return weatherlayer;
 }
@@ -359,8 +388,14 @@ function moveDate(delta){
    DAY+=delta;
    DAY = DAY < 0 ? 0 : DAY;
    DAY = DAY > 13 ? 13 : DAY;
-   const times = weatherLayer.getSource().getFeatures()[0].getProperties();
-   let daystr = times['name'+DAY];
+   let f = weatherLayer.getSource().getFeatures()[0]
+   let times = [];
+   let daystr = "zoom for dates";
+   console.log(f);
+   if(f){
+      times = f.getProperties();
+      daystr = times['name'+DAY];
+   } 
    document.getElementById("curTimeDisplay").innerHTML = "Weather Forecast for " + daystr;
    map.getLayers().forEach(l => l.get('title') !== "OSM" ? l.getSource().refresh() : undefined);
 }
@@ -376,7 +411,8 @@ function createPeaksLayer(){
    let peaksLayer = new VectorLayer({
       title: "peaks layer",
       source: src,
-      style: climbStyle
+      style: climbStyle,
+      maxResolution : 400,
    });
    return peaksLayer;
 }
