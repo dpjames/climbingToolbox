@@ -1,0 +1,11 @@
+cleanClimbs.py
+cleanWeather.py
+outfile
+outfile.geojson
+tmp
+toGeoJson.py
+update.sh
+weather
+weather.geojson
+wscrub.py
+ogr2ogr -f ESRI Shapefile -a_srs EPSG:4326 ../gis/weather/weather.shp weather.geojson

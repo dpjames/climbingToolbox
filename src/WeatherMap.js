@@ -21,8 +21,9 @@ library.add(faArrowRight)
 library.add(faArrowLeft)
 library.add(faTimes)
 
-//const GEO_HOST = "http://raspberrypi:8080";
-const GEO_HOST = "http://66.214.192.84:8080";
+const GEO_HOST = "http://raspberrypi:8080";
+const MAX_RES = 1000;
+//const GEO_HOST = "http://66.214.192.84:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
 let baseLayer = createTopoLayer();
@@ -319,7 +320,7 @@ function createClimbLayer(){
       title:"climbs",
       source:src,
       style : climbStyle,
-      maxResolution : 400,
+      maxResolution : MAX_RES,
    });
    return climbLayer;
 }
@@ -343,7 +344,7 @@ function createWeatherLayer(){
       title:"weather",
       source:src,
       style : nostyle,
-      maxResolution : 400,
+      maxResolution : MAX_RES,
    });
    return weatherlayer;
 }
@@ -413,7 +414,7 @@ function createPeaksLayer(){
       title: "peaks layer",
       source: src,
       style: climbStyle,
-      maxResolution : 400,
+      maxResolution : MAX_RES,
    });
    return peaksLayer;
 }
