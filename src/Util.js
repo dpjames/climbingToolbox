@@ -2,7 +2,7 @@ import React from 'react';
 
 class Button extends React.Component {
    render(){
-      let classes = "button " + this.props.extraClass;
+      let classes = "clickable button " + this.props.extraClass;
       return (
          <div className={classes} onClick={this.props.onClick}>{this.props.text}</div>
       )
