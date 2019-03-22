@@ -5,7 +5,7 @@ FORECAST_BASE_URL = "http://dataservice.accuweather.com/forecasts/v1/daily/15day
 LOCATION_KEY_BASE_URL = "http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?q=LAT,LON&apikey="+API_KEY
 
 URL_BASE="https://api.weather.gov/points/LAT,LON"
-STEPS = 10
+STEPS = 90
 
 x1 = 48.851162
 x2 = 32.083738
