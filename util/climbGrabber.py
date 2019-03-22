@@ -38,8 +38,8 @@ tcount = 0
 while(cx < xstop):
     while(cy < ystop):
         tcount+=1
-        print str(tcount / (steps * steps)) + " = " + str(tcount) + "/" + str(steps*steps)
-        thisurl = url.replace("LAT",str(cy)).replace("LON",str(cx))
+        thisurl = url.replace("LAT",str(cx)).replace("LON",str(cy))
+        print thisurl + " " + str(tcount / (steps * steps)) + " = " + str(tcount) + "/" + str(steps*steps)
         geturl(thisurl, f)
         f.write("===")
         cy+=dy
