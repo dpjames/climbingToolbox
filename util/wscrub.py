@@ -5,7 +5,7 @@ FORECAST_BASE_URL = "http://dataservice.accuweather.com/forecasts/v1/daily/15day
 LOCATION_KEY_BASE_URL = "http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?q=LAT,LON&apikey="+API_KEY
 
 URL_BASE="https://api.weather.gov/points/LAT,LON"
-STEPS = 90
+STEPS = 10
 
 x1 = 48.851162
 x2 = 32.083738
@@ -40,7 +40,6 @@ while clat <= latEnd:
             r = requests.get(url=LURL)
             data = r.json()
             f_url = data['properties']['forecast']
-            outfile.write("===\n")
             if(f_url is None):
                 outfile.write(buildEntry(clat,clon,"NO_DATA"))
             else:
