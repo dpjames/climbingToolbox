@@ -55,7 +55,6 @@ class Display extends React.Component {
    render(){
       let activeIndex = -1;
       let cpage = this.state.history[this.state.index];
-      console.log(cpage.type);
       this.state.pages.forEach((p, i) => {
          if(p.type === cpage.type){
             activeIndex = i;

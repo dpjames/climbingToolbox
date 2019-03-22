@@ -16,8 +16,10 @@ import Overlay from 'ol/Overlay';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faArrowUp, faArrowDown, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 library.add(faArrowRight)
+library.add(faArrowUp)
+library.add(faArrowDown)
 library.add(faArrowLeft)
 library.add(faTimes)
 
@@ -110,7 +112,6 @@ class Header extends React.Component {
       console.log(props);
       this.state = {
          buttons : [
-            (<DateControls key={keyCount++} dateFunc={this.updateDate} />),
             (<LayerToggleButton layer={peaksLayer}   on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
             (<LayerToggleButton layer={climbLayer}   on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
             (<LayerToggleButton layer={weatherLayer} on={false} key={keyCount++} handler={toggleWeather} text="toggle weather" />)
@@ -123,9 +124,12 @@ class Header extends React.Component {
    }
    render() {
       return (
-         <div id="header" className={this.props.show ? "" : "hide"}>
-            <ButtonStack buttons={this.state.buttons}/>
-            <InfoPanel />
+         <div id="header" >
+            <DateControls dateFunc={this.updateDate} />
+            <div className={this.props.show ? "" : "hide"}>
+               <ButtonStack buttons={this.state.buttons}/>
+               <InfoPanel />
+            </div>
          </div>
       )
    }
@@ -148,7 +152,68 @@ class WeatherControls extends React.Component {
       return (
          <div id="weatherContols"> 
             <Header show={this.state.showHeader} updateCallout={this.props.updateCallout}/>
-            <Button text={this.state.showHeader ? " ^ Hide Controls ^ " : " v Show Controls v "} onClick={() => this.toggleHeader()}/>
+            <ControlsButton onClick={() => this.toggleHeader()} visible={this.state.showHeader} />
+         </div>
+      );
+   }
+}
+class ControlsButton extends React.Component {
+   constructor(props){
+      super(props);
+      this.state = {
+         show : (
+            <div>
+                 <FontAwesomeIcon icon="arrow-down" /> 
+                 <div className="showHide">show controls</div>
+                 <FontAwesomeIcon icon="arrow-down" />
+            </div>
+         ),
+         hide : (
+            <div>
+                <FontAwesomeIcon icon="arrow-up" /> 
+                <div className="showHide">hide controls</div>
+                <FontAwesomeIcon icon="arrow-up" />
+            </div>
+         )
+      }
+   }
+   render(){
+      return (
+         <Button text={this.props.visible ? this.state.hide : this.state.show } onClick={this.props.onClick}/>
+      );
+   }
+}
+class BetaWindow extends React.Component {
+   constructor(props){
+      super(props);
+      this.changeActive = this.changeActive.bind(this);
+      this.state={
+         show : false,
+         activeIndex : 0,
+         spurl : "",
+         mpurl : "",
+         url : ""
+      }
+   }
+   changeActive(index, url){
+      this.setState({activeIndex:index, url:url}); 
+   }
+   render(){
+      var classes = "betaWindow " + (this.state.show ? "" : "hide");
+      var inum = 0;
+      var pages = [
+         <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(0, this.state.spurl)} text="Summit Post" />,
+         <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(1, this.state.mpurl)} text="Mountain Project" />,
+      ]
+      return (
+         <div className={classes}>
+            <div className="offsetTop">
+               <ButtonBar buttons={pages}/> 
+            </div>
+            <div className="button close" onClick={() => this.setState({show : false})}>
+               <FontAwesomeIcon icon="times" />
+            </div>
+            <iframe title="betaWindow" src={this.state.url}></iframe>
          </div>
       );
    }
@@ -157,22 +222,47 @@ class WeatherMap extends React.Component {
    constructor(props){
       super(props);
       this.updateCallout = this.updateCallout.bind(this);
+      this.showBeta = this.showBeta.bind(this);
+      this.hideBeta = this.hideBeta.bind(this);
    }
    updateCallout(newState){
       this.callout.setState(newState);
+   }
+   showBeta(summitF, rockF){
+      var spurl = "";
+      var mpurl = "";
+      if(summitF != null){
+         spurl = "http://www.summitpost.org" + summitF.getProperties().URL;
+      }
+      if(rockF != null){
+         console.log(rockF.getProperties());
+         debugger;
+         mpurl = "http://www.google.com";
+      }
+      this.beta.setState({show : true, spurl : spurl, mpurl : mpurl, url: spurl});
+   }
+   hideBeta(){
+      this.beta.setState({show : false});
    }
    render(){
       return(
          <div id="mainContent">
             <WeatherControls updateCallout={this.updateCallout}/>
             <MapContainer />
-            <MapCallout ref={c => this.callout = c}/>
+            <MapCallout ref={c => this.callout = c} showBeta={this.showBeta} hideBeta={this.hideBeta}/>
+            <BetaWindow ref={b => this.beta = b} />
          </div>
       );
    }
 }
 
 class MapContainer extends React.Component {
+   constructor(props){
+      super(props);
+      this.state = {
+         show : false
+      }
+   }
    render(){
       return (
          <div id="map"></div>   
@@ -190,22 +280,14 @@ class MapCallout extends React.Component {
          weather : null,
          climb : null,
          peak : null,
-         showIframe : false,
       }
       this.updateCallout = this.updateCallout.bind(this);
-      this.showBeta = this.showBeta.bind(this);
    }
    render(){
       const convertToClick = (e) => {
          const evt = new MouseEvent('click', { bubbles: true })
          evt.stopPropagation = () => {}
          e.target.dispatchEvent(evt)
-      }
-      let iframe = "";
-      if(this.state.showIframe){
-         iframe = (
-            <iframe src={this.state.url}></iframe>
-         );
       }
       return (
          <div className={this.state.hidden ? "hide" : ""} id="mapCallout" onMouseUp={convertToClick}>
@@ -214,18 +296,11 @@ class MapCallout extends React.Component {
             </div>
             <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
             <div onClick={() => console.log(this.state.climb)}><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().NAME}</div>
-            <div className="clickable" onClick={() => this.showBeta(this.state.peak)}><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
-            {iframe}
+            <div className="clickable" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)}><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
          </div>
       )
    }
-   showBeta(f){
-      if(f === null){
-         return;
-      }
-      let url = "http://www.summitpost.org" + f.getProperties().URL;
-      this.setState({url : url, showIframe : true});
-   }
+
    updateCallout(e){
       if(e !== undefined){
          this.state.callout.setPosition(e.coordinate)
@@ -235,7 +310,7 @@ class MapCallout extends React.Component {
       newState.climb = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.peak = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.hidden = false;
-      newState.showIframe = false;
+      this.props.hideBeta();
       this.setState(newState);
    }
    componentDidMount(){
@@ -246,8 +321,6 @@ class MapCallout extends React.Component {
       map.on('click', e => this.updateCallout(e));
    }
 }
-
-
 
 
 
