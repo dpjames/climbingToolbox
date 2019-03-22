@@ -187,11 +187,13 @@ class MapCallout extends React.Component {
    constructor(props){
       super(props);
       this.state = {
-         weather : "N/A",
-         climb : "N/A",
-         peak : "N/A",
+         weather : null,
+         climb : null,
+         peak : null,
+         showIframe : false,
       }
       this.updateCallout = this.updateCallout.bind(this);
+      this.showBeta = this.showBeta.bind(this);
    }
    render(){
       const convertToClick = (e) => {
@@ -199,36 +201,41 @@ class MapCallout extends React.Component {
          evt.stopPropagation = () => {}
          e.target.dispatchEvent(evt)
       }
+      let iframe = "";
+      if(this.state.showIframe){
+         iframe = (
+            <iframe src={this.state.url}></iframe>
+         );
+      }
       return (
          <div className={this.state.hidden ? "hide" : ""} id="mapCallout" onMouseUp={convertToClick}>
             <div className="button close" onClick={() => this.setState({hidden : true})}>
                <FontAwesomeIcon icon="times" />
             </div>
-            <div><strong>Weather: </strong>       {this.state.weather['sfc' + DAY]}</div>
-            <div><strong>Nearest Climb: </strong> {this.state.climb}</div>
-            <div><strong>Nearest Peak: </strong>  {this.state.peak}</div>
+            <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
+            <div onClick={() => console.log(this.state.climb)}><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().NAME}</div>
+            <div className="clickable" onClick={() => this.showBeta(this.state.peak)}><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
+            {iframe}
          </div>
       )
+   }
+   showBeta(f){
+      if(f === null){
+         return;
+      }
+      let url = "http://www.summitpost.org" + f.getProperties().URL;
+      this.setState({url : url, showIframe : true});
    }
    updateCallout(e){
       if(e !== undefined){
          this.state.callout.setPosition(e.coordinate)
       }
       let newState = this.state;
-      //this is ugly and repetitve... perhaps refactor to be more functional 
-      let wf  = weatherLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
-      if(wf !== null){
-         newState.weather = wf.getProperties();
-      }
-      let cf  = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
-      if(cf !== null){
-         newState.climb = cf.getProperties().NAME;
-      }
-      let pf  = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
-      if(pf !== null){
-         newState.peak = pf.getProperties().NAME;
-      }
+      newState.weather = weatherLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      newState.climb = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      newState.peak = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.hidden = false;
+      newState.showIframe = false;
       this.setState(newState);
    }
    componentDidMount(){
