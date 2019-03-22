@@ -40,7 +40,6 @@ while clat <= latEnd:
             r = requests.get(url=LURL)
             data = r.json()
             f_url = data['properties']['forecast']
-            outfile.write("===\n")
             if(f_url is None):
                 outfile.write(buildEntry(clat,clon,"NO_DATA"))
             else:
