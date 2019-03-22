@@ -42,6 +42,8 @@ f.close()
 #f.close()
 f = open(OUT_GEOJSON, "w+")
 f.write('{"type" : "featureCollection", "features" : [')
+
+firstComma = True
 for i in range(len(split)):
     s = split[i]
     try:
@@ -50,9 +52,11 @@ for i in range(len(split)):
             if j['title'].contains("Problem"):
                 continue
         #geojson['features'].append(j)
-        f.write(s)
-        if i < len(split) - 2:
+        if not firstComma:
             f.write(",")
+        else:
+            firstComma = False;
+        f.write(s)
         #print len(geojson['features'])
     except Exception as e:
         print e
