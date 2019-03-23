@@ -36,7 +36,6 @@ for jstr in climbsArr:
             props['name'] = climbData['name']
             props['url'] = climbData['url']
             props['location'] = json.dumps(climbData['location'])
-            props['id'] = climbData['id']
             feature['properties'] = props
             feature['geometry'] = geo
             geojson['features'].append(feature) 
