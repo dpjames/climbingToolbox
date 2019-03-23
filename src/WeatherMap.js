@@ -294,7 +294,7 @@ class MapCallout extends React.Component {
                <FontAwesomeIcon icon="times" />
             </div>
             <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
-            <div onClick={() => console.log(this.state.climb)}><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().NAME}</div>
+            <div onClick={() => console.log(this.state.climb)}><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().name}</div>
             <div><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
             <Button extraClass="betaButton" text="Show Beta" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)} />
          </div>
@@ -309,6 +309,7 @@ class MapCallout extends React.Component {
       newState.weather = weatherLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.climb = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.peak = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      console.log(this.state.climb.getProperties());
       newState.hidden = false;
       if(!IS_MOBILE()){
          this.props.showBeta(this.state.peak, this.state.climb)

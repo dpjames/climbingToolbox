@@ -18,21 +18,31 @@ geojson['type'] = 'FeatureCollection'
 geojson['features'] = []
 
 o = open(O_NAME, "w+")
-
+knownIds = []
 for jstr in climbsArr:
     try:
         j = json.loads(jstr)
         for climbData in j['routes']:
+            if(climbData['id'] in knownIds):
+                continue;
+            else:
+                knownIds.append(climbData['id'])
             feature = dict()
             feature['type'] = "feature"
             geo = dict()
             geo['type'] = "point"
             geo['coordinates'] = [climbData['longitude'], climbData['latitude']]
-            geo['properties'] = climbData
+            props = dict()
+            props['name'] = climbData['name']
+            props['url'] = climbData['url']
+            props['location'] = json.dumps(climbData['location'])
+            props['id'] = climbData['id']
+            feature['properties'] = props
             feature['geometry'] = geo
             geojson['features'].append(feature) 
-    except:
+    except Exception as e:
         print jstr
+        print e
 
 o.write(json.dumps(geojson))
 o.close()
