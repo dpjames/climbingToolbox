@@ -98,9 +98,9 @@ body {
 }
 .betaWindow {
    position:absolute;
-   top:calc(var(--navBarH) + 20px);
-   left:30px;
-   width:calc(100vw - 60px);
+   top:var(--navBarH);
+   right:10px;
+   width:30vw;
    z-index:10;
 }
 .offsetTop{
@@ -114,16 +114,12 @@ body {
 .betaWindow > iframe{
    width:calc(100% + 5px);
    height:calc(var(--fullH) - 100px) ;
+   background-color : rgba(0,0,0,.7);
 }
-@media only screen and (max-width: 600px) {
-   #weatherContols {
-      width:100%;
-      max-width:100%;
-      padding:0px;
-   }
-   .betaWindow {
-   }
+.betaButton {
+   display: none;
 }
+
 #topRow {
    display:flex;
    justify-content:center;
@@ -202,6 +198,8 @@ body {
    padding:0px;
    margin:0px;
    height:auto;
+   cursor:pointer;
+   font-size:20px;
    box-shadow:none !important;
 }
 #mapCallout {
@@ -214,4 +212,23 @@ body {
    padding-right:30px;
    transform: translateX(-100%);
 }
+
+@media only screen and (max-width: 1200px) {
+   #weatherContols {
+      width:100%;
+      max-width:100%;
+      padding:0px;
+   }
+   .betaWindow {
+      position:absolute;
+      top:calc(var(--navBarH) + 20px);
+      left:30px;
+      width:calc(100vw - 60px);
+      z-index:10;
+   }
+   .betaButton {
+      display : block;
+   }
+}
+
 

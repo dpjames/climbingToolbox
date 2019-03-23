@@ -33,6 +33,10 @@ let weatherLayer = createWeatherLayer();
 let peaksLayer = createPeaksLayer();
 let map = undefined;
 
+let IS_MOBILE = () => {
+   return window.innerWidth <= 1200;
+}
+
 class LegendDot extends React.Component{
    render(){
       let classList = "legendDot legend"+this.props.value;
@@ -138,7 +142,7 @@ class WeatherControls extends React.Component {
    constructor(props){
       super(props);
       this.state = {
-         showHeader : window.screen.width > 600
+         showHeader : !IS_MOBILE()
       }
       this.toggleHeader = this.toggleHeader.bind(this);
    }
@@ -223,7 +227,6 @@ class WeatherMap extends React.Component {
       super(props);
       this.updateCallout = this.updateCallout.bind(this);
       this.showBeta = this.showBeta.bind(this);
-      this.hideBeta = this.hideBeta.bind(this);
    }
    updateCallout(newState){
       this.callout.setState(newState);
@@ -236,20 +239,16 @@ class WeatherMap extends React.Component {
       }
       if(rockF != null){
          console.log(rockF.getProperties());
-         debugger;
          mpurl = "http://www.google.com";
       }
       this.beta.setState({show : true, spurl : spurl, mpurl : mpurl, url: spurl});
-   }
-   hideBeta(){
-      this.beta.setState({show : false});
    }
    render(){
       return(
          <div id="mainContent">
             <WeatherControls updateCallout={this.updateCallout}/>
             <MapContainer />
-            <MapCallout ref={c => this.callout = c} showBeta={this.showBeta} hideBeta={this.hideBeta}/>
+            <MapCallout ref={c => this.callout = c} showBeta={this.showBeta} />
             <BetaWindow ref={b => this.beta = b} />
          </div>
       );
@@ -296,7 +295,8 @@ class MapCallout extends React.Component {
             </div>
             <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
             <div onClick={() => console.log(this.state.climb)}><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().NAME}</div>
-            <div className="clickable" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)}><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
+            <div><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
+            <Button extraClass="betaButton" text="Show Beta" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)} />
          </div>
       )
    }
@@ -310,7 +310,9 @@ class MapCallout extends React.Component {
       newState.climb = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.peak = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.hidden = false;
-      this.props.hideBeta();
+      if(!IS_MOBILE()){
+         this.props.showBeta(this.state.peak, this.state.climb)
+      }
       this.setState(newState);
    }
    componentDidMount(){
