@@ -206,8 +206,8 @@ class BetaWindow extends React.Component {
       var classes = "betaWindow " + (this.state.show ? "" : "hide");
       var inum = 0;
       var pages = [
-         <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(0, this.state.spurl)} text="Summit Post" />,
-         <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(1, this.state.mpurl)} text="Mountain Project" />,
+         <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(0, "spurl")} text="Summit Post" />,
+         <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(1, "mpurl")} text="Mountain Project" />,
       ]
       return (
          <div className={classes}>
@@ -217,7 +217,7 @@ class BetaWindow extends React.Component {
             <div className="button close" onClick={() => this.setState({show : false})}>
                <FontAwesomeIcon icon="times" />
             </div>
-            <iframe title="betaWindow" src={this.state.url}></iframe>
+            <iframe title="betaWindow" src={this.state[this.state.url]}></iframe>
          </div>
       );
    }
@@ -239,9 +239,10 @@ class WeatherMap extends React.Component {
       }
       if(rockF != null){
          console.log(rockF.getProperties());
-         mpurl = "http://www.google.com";
+         mpurl = rockF.getProperties().url;
       }
-      this.beta.setState({show : true, spurl : spurl, mpurl : mpurl, url: spurl});
+      let curl = this.beta.state.url  == "" ? spurl : this.beta.state.url;
+      this.beta.setState({show : true, spurl : spurl, mpurl : mpurl, url : curl});
    }
    render(){
       return(
