@@ -7,7 +7,9 @@ for l in f:
     txt+=l
 newFeats = []
 weather = json.loads(txt)
+del txt
 for f in weather['features']:
+    print "looping"
     newF = f
     newF['geometry'] = f['geometry']['geometries'][0]
     del newF['@context']
@@ -18,6 +20,7 @@ for f in weather['features']:
         newF['properties']['name' + str(i)] = cp['name']
         newF['properties']['sfc' + str(i)] = cp['shortForecast']
         newF['properties']['sTime' + str(i)] = cp['startTime']
+    del f
     newFeats.append(newF);
 
 weather['features'] = newFeats
