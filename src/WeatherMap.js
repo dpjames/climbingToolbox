@@ -3,15 +3,16 @@ import './index.css';
 import 'ol/ol.css';
 
 import {Map, View} from 'ol';
-import {Text, Style, Circle, Fill, Stroke} from 'ol/style'
+import {Text, RegularShape, Style, Circle, Fill, Stroke} from 'ol/style'
 import {fromLonLat} from 'ol/proj';
 import {Vector as VectorLayer, Tile} from 'ol/layer'
 import {Cluster, Vector, XYZ} from 'ol/source'
 import {GeoJSON} from 'ol/format'
+import {unByKey} from 'ol/Observable'
 import {bbox} from 'ol/loadingstrategy'
 import {defaults as defaultControls} from 'ol/control'
+import {defaults as defaultInteractions} from 'ol/interaction';
 import Overlay from 'ol/Overlay';
-
 
 
 import {ButtonBar, ButtonStack, Button} from './Util.js'
@@ -27,7 +28,7 @@ library.add(faArrowLeft)
 library.add(faTimes)
 
 //const GEO_HOST = "http://raspberrypi68080";
-const MAX_RES = 1000;
+//const MAX_RES = 1000;
 const GEO_HOST = "http://66.214.192.84:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
@@ -66,7 +67,7 @@ class Legend extends React.Component {
 class TimeDisplay extends React.Component {
    render(){
       return (
-         <div id="curTimeDisplay">Weather Forecast for Nowish</div>
+         <div id="curTimeDisplay">Nowish</div>
       );
    }
 }
@@ -74,7 +75,6 @@ class InfoPanel extends React.Component {
    render(){
       return (
          <div id="infoPanel">
-            <TimeDisplay />
             <Legend dots={["Rain","Snow","Clear","Sunny","Cloudy","Loading","Unknown"]}/>
          </div>
       );
@@ -89,7 +89,7 @@ class LayerToggleButton extends React.Component {
    }
    render(){
       return (
-         <Button extraClass={this.state.on ? "on" : "off"} onClick={() => this.props.handler(this, this.props.layer)} text={this.props.text} />
+         <Button extraClass={this.state.on ? "on" : "off"} onClick={() => this.props.handler(this, this.props.layer, this.props.layerStyle)} text={this.props.text} />
       );
    }
 }
@@ -99,8 +99,9 @@ class DateControls extends React.Component {
       let keyCount = 0;
       this.state = {
          buttons : [
-            (<Button key={keyCount++} extraClass="flexFill" onClick={() => this.props.dateFunc(-1)} text={<FontAwesomeIcon icon="arrow-left" /> } />),
-            (<Button key={keyCount++} extraClass="flexFill" onClick={() => this.props.dateFunc(1) } text={<FontAwesomeIcon icon="arrow-right" /> } />),
+            (<Button key={keyCount++} extraClass="dateArrow flexFill" onClick={() => this.props.dateFunc(-1)} text={<FontAwesomeIcon icon="arrow-left" /> } />),
+            (<TimeDisplay key={keyCount++} />),
+            (<Button key={keyCount++} extraClass="dateArrow flexFill" onClick={() => this.props.dateFunc(1) } text={<FontAwesomeIcon icon="arrow-right" /> } />),
          ]
       }
    }
@@ -115,12 +116,11 @@ class Header extends React.Component {
       super(props);
       this.updateDate = this.updateDate.bind(this);
       let keyCount = 0;
-      console.log(props);
       this.state = {
          buttons : [
-            (<LayerToggleButton layer={peaksLayer}   on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
-            (<LayerToggleButton layer={climbLayer}   on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
-            (<LayerToggleButton layer={weatherLayer} on={false} key={keyCount++} handler={toggleWeather} text="toggle weather" />)
+            (<LayerToggleButton layer={peaksLayer}   layerStyle={peakStyle}   on={false} key={keyCount++} handler={toggleLayer}   text="toggle peaks" />),
+            (<LayerToggleButton layer={climbLayer}   layerStyle={climbStyle}   on={true}  key={keyCount++} handler={toggleLayer}   text="toggle climb" />),
+            (<LayerToggleButton layer={weatherLayer} layerStyle={weatherStyle} on={false} key={keyCount++} handler={toggleLayer} text="toggle weather" />)
          ],
       }
    }
@@ -154,7 +154,6 @@ class WeatherControls extends React.Component {
       this.setState(newState);
    }
    render(){
-      console.log(this.state);
       return (
          <div id="weatherContols"> 
             <Header show={this.state.showHeader} updateCallout={this.props.updateCallout}/>
@@ -240,10 +239,9 @@ class WeatherMap extends React.Component {
          spurl = "http://www.summitpost.org" + summitF.getProperties().URL;
       }
       if(rockF != null){
-         console.log(rockF.getProperties());
          mpurl = rockF.getProperties().url;
       }
-      let curl = this.beta.state.url  == "" ? spurl : this.beta.state.url;
+      let curl = this.beta.state.url  === "" ? 'spurl' : this.beta.state.url;
       this.beta.setState({show : true, spurl : spurl, mpurl : mpurl, url : curl});
    }
    render(){
@@ -297,7 +295,7 @@ class MapCallout extends React.Component {
                <FontAwesomeIcon icon="times" />
             </div>
             <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
-            <div onClick={() => console.log(this.state.climb)}><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().name}</div>
+            <div><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().name}</div>
             <div><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
             <Button extraClass="betaButton" text="Show Beta" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)} />
          </div>
@@ -312,7 +310,6 @@ class MapCallout extends React.Component {
       newState.weather = weatherLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.climb = climbLayer.getSource().getSource().getClosestFeatureToCoordinate(e.coordinate)
       newState.peak = peaksLayer.getSource().getSource().getClosestFeatureToCoordinate(e.coordinate)
-      console.log(this.state.climb.getProperties());
       newState.hidden = false;
       if(!IS_MOBILE()){
          this.props.showBeta(this.state.peak, this.state.climb)
@@ -352,7 +349,6 @@ function getColorForDescription(desc){
    } else if(desc.indexOf("loading") > -1){
       return "rgba(0,0,0,1)";
    }
-   console.log(desc);
    return "red";
 }
 let staticWeatherStyle = new Style({
@@ -385,7 +381,7 @@ let staticClimbStyle = new Style({
       radius : 15
    })
 });
-let staticClimbText = new Text({
+let staticText = new Text({
    font: '20px Calibri,sans-serif',
    fill: new Fill({ color: '#000' }),
    stroke: new Stroke({
@@ -398,13 +394,33 @@ function climbStyle(f){
    let desc = getIntersectingDescription(f);
    staticClimbStyle.getImage().getFill().setColor(getColorForDescription(desc));
    staticClimbStyle.setImage(staticClimbStyle.getImage().clone());
-   if(f.get('features').length == 1){
+   if(f.get('features').length === 1){
       staticClimbStyle.setText(undefined);
    } else {
-      staticClimbText.setText(f.get('features').length.toString());
-      staticClimbStyle.setText(staticClimbText);
+      staticText.setText(f.get('features').length.toString());
+      staticClimbStyle.setText(staticText);
    }
    return staticClimbStyle
+}
+let staticPeakStyle = new Style({
+   image : new RegularShape({
+      points : 3,
+      fill : new Fill({color : "blue"}),
+      stroke : new Stroke({color : "black", width : "2"}),
+      radius : 20
+   })
+});
+function peakStyle(f){
+   let desc = getIntersectingDescription(f);
+   staticPeakStyle.getImage().getFill().setColor(getColorForDescription(desc));
+   staticPeakStyle.setImage(staticPeakStyle.getImage().clone());
+   if(f.get('features').length === 1){
+      staticPeakStyle.setText(undefined);
+   } else {
+      staticText.setText(f.get('features').length.toString());
+      staticPeakStyle.setText(staticText);
+   }
+   return staticPeakStyle
 }
 function createClimbLayer(){
    const src = new Vector({
@@ -450,6 +466,12 @@ function createWeatherLayer(){
       style : nostyle,
       //maxResolution : MAX_RES,
    });
+   var key = src.on('change', e => {
+      if(src.getState() === 'ready'){
+         climbLayer.getSource().refresh();
+         peaksLayer.getSource().refresh();
+      }
+   })
    return weatherlayer;
 }
 function nostyle(f){
@@ -476,6 +498,7 @@ function initMap(){
       baseLayer,
       weatherLayer,
       climbLayer,
+      peaksLayer,
    ];
    const view = new View({
       center : fromLonLat([-122.44, 40.25]),
@@ -485,6 +508,10 @@ function initMap(){
       target:"map",
       layers:layers,
       view:view,
+      interactions: defaultInteractions({
+         altShiftDragRotate:false, 
+         pinchRotate:false
+      }),
       controls : defaultControls({
          zoom : false,
       }),
@@ -497,12 +524,11 @@ function moveDate(delta){
    let f = weatherLayer.getSource().getFeatures()[0]
    let times = [];
    let daystr = "zoom for dates";
-   console.log(f);
    if(f){
       times = f.getProperties();
       daystr = times['name'+DAY];
    } 
-   document.getElementById("curTimeDisplay").innerHTML = "Weather Forecast for " + daystr;
+   document.getElementById("curTimeDisplay").innerHTML = daystr;
    map.getLayers().forEach(l => l.get('title') !== "OSM" ? l.getSource().refresh() : undefined);
 }
 
@@ -522,7 +548,7 @@ function createPeaksLayer(){
    let peaksLayer = new VectorLayer({
       title: "peaks layer",
       source: clusterSrc,
-      style: climbStyle,
+      style: nostyle,
       //maxResolution : MAX_RES,
    });
    return peaksLayer;
@@ -532,13 +558,9 @@ function toggleOn(caller){
    caller.setState({on : !caller.state.on});
    return on;
 }
-function toggleLayer(caller, l){
+function toggleLayer(caller, l, style){
    let on = toggleOn(caller);
-   on ? map.removeLayer(l) : map.addLayer(l);
-}
-function toggleWeather(caller){
-   let on = toggleOn(caller);
-   on ? weatherLayer.setStyle(nostyle) : weatherLayer.setStyle(weatherStyle);
+   on ? l.setStyle(nostyle) : l.setStyle(style);
 }
 
 export default WeatherMap;
