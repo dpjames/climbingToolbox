@@ -20,7 +20,7 @@ body {
    content:"Forecast For: "
 }
 #curTimeDisplay {
-   width: 33vw;
+   width: 230px;
    padding:5px;
    text-align:center;
    border-radius:8px;
