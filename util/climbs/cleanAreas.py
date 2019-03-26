@@ -8,9 +8,8 @@ from bs4 import BeautifulSoup
 ####################################################
 #                  GLOBALS                         #
 ####################################################
-BASE_F_NAME = "climbAreasRaw"
+BASE_F_NAME = "totalRawClimbData"
 OUTPUT_FILE = BASE_F_NAME + ".geojson"
-PREFIXES = ["OR","WA"]
 
 ####################################################
 #                   Functions                      #
@@ -58,7 +57,12 @@ def toFeature(name, url, location):
     return feature
 
 def addFeatures(htmlList, geoJson):
+    totlen = len(htmlList)
+    i = 0
     for html in htmlList:
+        if i % 10 == 0:
+            print str(i) + "/" + str(totlen)
+        i+=1
         if(len(html) == 0):
             continue
         soup = BeautifulSoup(html, "html.parser")
@@ -75,12 +79,10 @@ def addFeatures(htmlList, geoJson):
 geoJson = dict()
 geoJson['type'] = "featureCollection"
 geoJson['features'] = []
-for prefix in PREFIXES:
-    print "Doing " + prefix
-    f = open(prefix + BASE_F_NAME)
-    fullText = f.read()
-    htmlArray = fullText.split("<!DOCTYPE html>")
-    addFeatures(htmlArray, geoJson)
+f = open(BASE_F_NAME)
+fullText = f.read()
+htmlArray = fullText.split("<!DOCTYPE html>")
+addFeatures(htmlArray, geoJson)
 print "writing json"
 of = open(OUTPUT_FILE, "w+")
 of.write(json.dumps(geoJson).encode("utf-8"))
