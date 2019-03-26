@@ -19,9 +19,8 @@ class Display extends React.Component {
          history : [home],
          index : 0,
          pages : [
-            <Home key={id++} name="home" />,
-            <WeatherMap key={id++} name="weather map" />,
-            <BetaMap key={id++} name="beta map" />,
+            <Home key={id++} name="Home" />,
+            <WeatherMap key={id++} name="Map" />,
          ]
       }
       window.addEventListener("popstate", (e) => this.backNavFunc(e));

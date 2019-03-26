@@ -17,7 +17,8 @@ body {
    width:100vw;
 }
 #curTimeDisplay:before {
-   content:"Forecast For: "
+   content:"Forecast For: ";
+   display:block;
 }
 #curTimeDisplay {
    width: 230px;
