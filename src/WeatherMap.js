@@ -3,15 +3,18 @@ import './index.css';
 import 'ol/ol.css';
 
 import {Map, View} from 'ol';
-import {Style, Circle, Fill, Stroke} from 'ol/style'
+import {Text, Style, Circle, Fill, Stroke} from 'ol/style'
 import {fromLonLat} from 'ol/proj';
 import {Vector as VectorLayer, Tile} from 'ol/layer'
-import {Vector, XYZ} from 'ol/source'
+import {Cluster, Vector, XYZ} from 'ol/source'
 import {GeoJSON} from 'ol/format'
 import {bbox} from 'ol/loadingstrategy'
 import {defaults as defaultControls} from 'ol/control'
-import {ButtonBar, ButtonStack, Button} from './Util.js'
 import Overlay from 'ol/Overlay';
+
+
+
+import {ButtonBar, ButtonStack, Button} from './Util.js'
 
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -23,17 +26,16 @@ library.add(faArrowDown)
 library.add(faArrowLeft)
 library.add(faTimes)
 
-const GEO_HOST = "http://raspberrypi:8080";
+//const GEO_HOST = "http://raspberrypi68080";
 const MAX_RES = 1000;
-//const GEO_HOST = "http://66.214.192.84:8080";
+const GEO_HOST = "http://66.214.192.84:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
 let baseLayer = createTopoLayer();
 let weatherLayer = createWeatherLayer();
 let peaksLayer = createPeaksLayer();
 let map = undefined;
-
-let IS_MOBILE = () => {
+const IS_MOBILE = () => {
    return window.innerWidth <= 1200;
 }
 
@@ -308,8 +310,8 @@ class MapCallout extends React.Component {
       }
       let newState = this.state;
       newState.weather = weatherLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
-      newState.climb = climbLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
-      newState.peak = peaksLayer.getSource().getClosestFeatureToCoordinate(e.coordinate)
+      newState.climb = climbLayer.getSource().getSource().getClosestFeatureToCoordinate(e.coordinate)
+      newState.peak = peaksLayer.getSource().getSource().getClosestFeatureToCoordinate(e.coordinate)
       console.log(this.state.climb.getProperties());
       newState.hidden = false;
       if(!IS_MOBILE()){
@@ -380,14 +382,28 @@ let staticClimbStyle = new Style({
    image : new Circle({
       fill : new Fill({color : "blue"}),
       stroke : new Stroke({color : "black", width : "2"}),
-      radius : 8
+      radius : 15
    })
+});
+let staticClimbText = new Text({
+   font: '20px Calibri,sans-serif',
+   fill: new Fill({ color: '#000' }),
+   stroke: new Stroke({
+      color: '#fff', width: 2
+   }), 
+   text : ""
 });
 
 function climbStyle(f){
    let desc = getIntersectingDescription(f);
    staticClimbStyle.getImage().getFill().setColor(getColorForDescription(desc));
    staticClimbStyle.setImage(staticClimbStyle.getImage().clone());
+   if(f.get('features').length == 1){
+      staticClimbStyle.setText(undefined);
+   } else {
+      staticClimbText.setText(f.get('features').length.toString());
+      staticClimbStyle.setText(staticClimbText);
+   }
    return staticClimbStyle
 }
 function createClimbLayer(){
@@ -400,11 +416,15 @@ function createClimbLayer(){
       strategy: bbox,
       crossOrigin: 'anonymous'
    });
+   const clusterSrc = new Cluster({
+      source : src,
+      distance : 60,
+   });
    const climbLayer = new VectorLayer({
       title:"climbs",
-      source:src,
+      source:clusterSrc,
       style : climbStyle,
-      maxResolution : MAX_RES,
+      //maxResolution : MAX_RES,
    });
    return climbLayer;
 }
@@ -428,7 +448,7 @@ function createWeatherLayer(){
       title:"weather",
       source:src,
       style : nostyle,
-      maxResolution : MAX_RES,
+      //maxResolution : MAX_RES,
    });
    return weatherlayer;
 }
@@ -487,6 +507,7 @@ function moveDate(delta){
 }
 
 function createPeaksLayer(){
+
    const src = new Vector({
       format: new GeoJSON(),
       url:function(extent){
@@ -494,11 +515,15 @@ function createPeaksLayer(){
             +extent.join(",")+",EPSG:3857";
       },
       strategy: bbox});
+   const clusterSrc = new Cluster({
+      source : src,
+      distance : 60,
+   });
    let peaksLayer = new VectorLayer({
       title: "peaks layer",
-      source: src,
+      source: clusterSrc,
       style: climbStyle,
-      maxResolution : MAX_RES,
+      //maxResolution : MAX_RES,
    });
    return peaksLayer;
 }
