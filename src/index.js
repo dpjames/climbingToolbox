@@ -4,7 +4,6 @@ import './index.css';
 import WeatherMap from './WeatherMap.js';
 import {NavBar} from "./Util.js";
 import {Home} from "./Home.js";
-import {BetaMap} from "./BetaMap.js";
 
 class Display extends React.Component {
    

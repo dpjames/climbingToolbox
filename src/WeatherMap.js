@@ -8,7 +8,6 @@ import {fromLonLat} from 'ol/proj';
 import {Vector as VectorLayer, Tile} from 'ol/layer'
 import {Cluster, Vector, XYZ} from 'ol/source'
 import {GeoJSON} from 'ol/format'
-import {unByKey} from 'ol/Observable'
 import {bbox} from 'ol/loadingstrategy'
 import {defaults as defaultControls} from 'ol/control'
 import {defaults as defaultInteractions} from 'ol/interaction';
@@ -466,7 +465,7 @@ function createWeatherLayer(){
       style : nostyle,
       //maxResolution : MAX_RES,
    });
-   var key = src.on('change', e => {
+   src.on('change', e => {
       if(src.getState() === 'ready'){
          climbLayer.getSource().refresh();
          peaksLayer.getSource().refresh();
