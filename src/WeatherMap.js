@@ -217,7 +217,9 @@ class BetaWindow extends React.Component {
             <div className="button close" onClick={() => this.setState({show : false})}>
                <FontAwesomeIcon icon="times" />
             </div>
-            <iframe title="betaWindow" src={this.state[this.state.url]}></iframe>
+            <div className="iframeWrapper">
+               <iframe title="betaWindow" src={this.state[this.state.url]}></iframe>
+            </div>
          </div>
       );
    }

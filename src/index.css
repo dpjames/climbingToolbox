@@ -16,6 +16,12 @@ body {
    height:var(--fullH);
    width:100vw;
 }
+.iframeWrapper {
+   width:calc(100% + 5px);
+   height:calc(var(--fullH) - 100px) ;
+   background-color : rgba(0,0,0,.7);
+
+}
 #curTimeDisplay:before {
    content:"Forecast For: ";
    display:block;
@@ -128,10 +134,9 @@ body {
    background-color:white;
    padding:4px;
 }
-.betaWindow > iframe{
-   width:calc(100% + 5px);
-   height:calc(var(--fullH) - 100px) ;
-   background-color : rgba(0,0,0,.7);
+.iframeWrapper > iframe{
+   width:100%;
+   height:100%;
 }
 .betaButton {
    display: none;
@@ -245,6 +250,10 @@ body {
    }
    .betaButton {
       display : block;
+   }
+   .iframeWrapper {
+      -webkit-overflow-scrolling: touch;
+  	   overflow-y: scroll;
    }
 }
 
