@@ -191,17 +191,23 @@ class BetaWindow extends React.Component {
    constructor(props){
       super(props);
       this.changeActive = this.changeActive.bind(this);
+      this.showFrame = this.showFrame.bind(this);
       this.state={
          show : false,
          activeIndex : 0,
          spurl : "",
          mpurl : "",
-         url : ""
+         url : "",
+         showFrame : false
       }
    }
-   changeActive(index, url){
-      this.setState({activeIndex:index, url:url}); 
+   showFrame(){
+      this.setState({showFrame : true});
    }
+   changeActive(index, url){
+      this.setState({activeIndex:index, url:url, showFrame : false}); 
+   }
+
    render(){
       var classes = "betaWindow " + (this.state.show ? "" : "hide");
       var inum = 0;
@@ -209,6 +215,7 @@ class BetaWindow extends React.Component {
          <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(0, "spurl")} text="Summit Post" />,
          <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(1, "mpurl")} text="Mountain Project" />,
       ]
+      var loader = this.state.showFrame ? "" : (<div className="loader"> loading data... </div>);
       return (
          <div className={classes}>
             <div className="offsetTop">
@@ -218,7 +225,9 @@ class BetaWindow extends React.Component {
                <FontAwesomeIcon icon="times" />
             </div>
             <div className="iframeWrapper">
-               <iframe title="betaWindow" src={this.state[this.state.url]}></iframe>
+               
+               {loader}
+               <iframe onLoad={this.showFrame} className={this.state.showFrame ? "" : "hide"} title="betaWindow" src={this.state[this.state.url]}></iframe>
             </div>
          </div>
       );

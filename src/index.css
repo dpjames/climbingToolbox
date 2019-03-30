@@ -214,8 +214,8 @@ body {
    position:absolute;
    top:3px;
    right:9px;
-   width:20px;;
-   height:20px;
+   width:25px;;
+   height:25px;
    border:none;
    padding:0px;
    margin:0px;
@@ -223,6 +223,15 @@ body {
    cursor:pointer;
    font-size:20px;
    box-shadow:none !important;
+}
+.loader {
+   position:absolute;
+   top:45%;
+   font-size:30px;
+   left:5%;
+   width:90%;
+   text-align:center;
+   text-shadow: 0 0 4px white, 0 0 4px white, 0 0 4px white, 0 0 4px white;
 }
 #mapCallout {
    white-space:nowrap;
