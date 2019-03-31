@@ -3,7 +3,7 @@ import json
 def findPrecip(s):
     if "%" in s:
         index = s.index("%")
-        numberStr = s[s.index(" ", index - 5, index) : index]
+        numberStr = s[s.index(" ", index - 4, index) : index]
         print numberStr
         return int(numberStr)
     else:
@@ -31,6 +31,7 @@ for f in weather['features']:
         newF['properties']['sTime' + str(i)] = cp['startTime']
         newF['properties']['precip' + str(i)] = findPrecip(cp['detailedForecast'])
     del f
+    del newF['properties']['periods']
     newFeats.append(newF);
 
 weather['features'] = newFeats
