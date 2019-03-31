@@ -10,36 +10,6 @@ for l in f:
 split = total.split(DELIM)
 f.close()
 
-
-#geojson = dict()
-#geojson['type'] = 'FeatureCollection'
-#geojson['features'] = []
-##for s in split:
-##    try:
-##        j = json.loads(s)
-##        geo = dict()
-##        geo['geometry'] = j['geometry']['geometries'][1]
-##        geo['type'] = 'Feature'
-##        geojson['features'].append(geo)
-##        print len(geojson['features'])
-##    except Exception as e:
-##        print e
-##        pass
-#for s in split:
-#    try:
-#        j = json.loads(s)
-#        if "title" in j:
-#            if j['title'].contains("Problem"):
-#                continue
-#        geojson['features'].append(j)
-#        print len(geojson['features'])
-#    except Exception as e:
-#        print e
-#        pass
-##geojson = fixBounds(geojson)
-#f = open(OUT_GEOJSON, "w+")
-#f.write(json.dumps(geojson))
-#f.close()
 f = open(OUT_GEOJSON, "w+")
 f.write('{"type" : "featureCollection", "features" : [')
 
@@ -51,13 +21,11 @@ for i in range(len(split)):
         if "title" in j:
             if j['title'].contains("Problem"):
                 continue
-        #geojson['features'].append(j)
         if not firstComma:
             f.write(",")
         else:
             firstComma = False;
         f.write(s)
-        #print len(geojson['features'])
     except Exception as e:
         print e
         pass

@@ -1,4 +1,14 @@
 import json
+
+def findPrecip(s):
+    if "%" in s:
+        index = s.index("%")
+        numberStr = s[s.index(" ", index - 5, index) : index]
+        print numberStr
+        return int(numberStr)
+    else:
+        return 0
+
 fname = "outfile.geojson"
 
 f = open(fname, "r")
@@ -9,7 +19,6 @@ newFeats = []
 weather = json.loads(txt)
 del txt
 for f in weather['features']:
-    print "looping"
     newF = f
     newF['geometry'] = f['geometry']['geometries'][0]
     del newF['@context']
@@ -20,6 +29,7 @@ for f in weather['features']:
         newF['properties']['name' + str(i)] = cp['name']
         newF['properties']['sfc' + str(i)] = cp['shortForecast']
         newF['properties']['sTime' + str(i)] = cp['startTime']
+        newF['properties']['precip' + str(i)] = findPrecip(cp['detailedForecast'])
     del f
     newFeats.append(newF);
 
