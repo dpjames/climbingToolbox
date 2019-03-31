@@ -28,7 +28,8 @@ library.add(faTimes)
 
 //const GEO_HOST = "http://raspberrypi68080";
 //const MAX_RES = 1000;
-const GEO_HOST = "http://66.214.192.84:8080";
+//const GEO_HOST = "http://66.214.192.84:8080";
+const GEO_HOST = "http://davidpjames.com:8080";
 let DAY = 0;
 let climbLayer = createClimbLayer();
 let baseLayer = createTopoLayer();
@@ -214,7 +215,7 @@ class BetaWindow extends React.Component {
       var pages = [
          <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(0, "spurl")} text="Summit Post" />,
          <Button key={inum} extraClass={this.state.activeIndex === inum++ ? "active" : ""} onClick={() => this.changeActive(1, "mpurl")} text="Mountain Project" />,
-      ]
+      ];
       var loader = this.state.showFrame ? "" : (<div className="loader"> loading data... </div>);
       return (
          <div className={classes}>
@@ -225,7 +226,6 @@ class BetaWindow extends React.Component {
                <FontAwesomeIcon icon="times" />
             </div>
             <div className="iframeWrapper">
-               
                {loader}
                <iframe onLoad={this.showFrame} className={this.state.showFrame ? "" : "hide"} title="betaWindow" src={this.state[this.state.url]}></iframe>
             </div>
