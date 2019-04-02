@@ -7,7 +7,7 @@ def findPrecip(s):
         index = s.index("%")
         numberStr = s[s.index(" ", index - 4, index) : index]
         return int(numberStr)
-    if re.search("(rain.|snow.)", s) is not None:
+    if re.search("(rain\.|snow\.)", s) is not None:
         return 100
     if re.search("(rain|snow|showers) likely", s) is not None:
         return 75
