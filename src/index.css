@@ -11,6 +11,7 @@
 }
 body {
    margin:0px;
+   font-family: 'Raleway', sans-serif;
 }
 #root {
    height:var(--fullH);
@@ -232,6 +233,10 @@ body {
    width:90%;
    text-align:center;
    text-shadow: 0 0 4px white, 0 0 4px white, 0 0 4px white, 0 0 4px white;
+}
+.intro {
+   padding:10%;
+   font-size:20px;
 }
 #mapCallout {
    white-space:nowrap;
