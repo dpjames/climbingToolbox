@@ -15,7 +15,7 @@ def findPrecip(s):
         return 30
     if re.search("little or no (snow|rain)", s) is not None:
         return 10
-    if re.search("(snow|rain)fall" s) is not None:
+    if re.search("(snow|rain)fall", s) is not None:
         return 100
     if re.search("(rain|snow)", s) is not None:
         print "unknown: " + s
