@@ -376,7 +376,7 @@ let staticWeatherStyle = new Style({
 
 function weatherStyle(f, r) {
    const props = f.getProperties();
-   const weatherColor = getColorForDescription(props['sfc' + DAY], props['precip']+DAY);
+   const weatherColor = getColorForDescription(props['sfc' + DAY], props['precip'+DAY]);
    staticWeatherStyle.getImage().getFill().setColor(weatherColor);
    staticWeatherStyle.setImage(staticWeatherStyle.getImage().clone());
    return staticWeatherStyle;

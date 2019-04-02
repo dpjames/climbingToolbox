@@ -1,4 +1,5 @@
 import json
+import re
 
 def findPrecip(s):
     s = s.lower()
@@ -7,7 +8,7 @@ def findPrecip(s):
         numberStr = s[s.index(" ", index - 4, index) : index]
         print numberStr
         return int(numberStr)
-    if "rain likely" in s or "snow likely" in s:
+    if re.search("(rain|snow|showers) likely", s) is not None:
         return 75
     else:
         return 0
