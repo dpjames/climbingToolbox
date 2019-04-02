@@ -11,11 +11,11 @@ def findPrecip(s):
         return 100
     if re.search("(rain|snow|showers) likely", s) is not None:
         return 75
-    if re.search("chance of (rain|snow|showers)", s) is not None:
+    if re.search("chance .* (rain|snow|showers)", s) is not None:
         return 30
     if re.search("(rain|snow)", s) is not None:
         print "unknown: " + s
-        return 0
+        return 100
     else:
         return 0
 
