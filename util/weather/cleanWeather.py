@@ -1,11 +1,14 @@
 import json
 
 def findPrecip(s):
+    s = s.lower()
     if "%" in s:
         index = s.index("%")
         numberStr = s[s.index(" ", index - 4, index) : index]
         print numberStr
         return int(numberStr)
+    if "rain likely" in s or "snow likely" in s:
+        return 75
     else:
         return 0
 
