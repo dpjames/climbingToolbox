@@ -305,6 +305,7 @@ class MapCallout extends React.Component {
                <FontAwesomeIcon icon="times" />
             </div>
             <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
+            <div><strong>Chance Precip:</strong>  {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['precip' + DAY]}</div>
             <div><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().name}</div>
             <div><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
             <Button extraClass="betaButton" text="Show Beta" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)} />
@@ -340,20 +341,24 @@ class MapCallout extends React.Component {
 
 
 //LOGIC BELOW
-function getColorForDescription(desc){
+function getColorForDescription(desc, precip){
+   let opacity = 1;
+   if(precip !== undefined){
+      opacity = precip / 100;
+   }
    desc = desc.toLowerCase()
    if(desc.indexOf("snow") > -1 ||
       desc.indexOf("frost") > -1){
-      return "rgba(0,0,255,.5)";
+      return "rgba(0,0,255,"+opacity+")";
    } else if(desc.indexOf("shower") > -1 ||
              desc.indexOf("rain") > -1 || 
              desc.indexOf("storm") > -1){
-      return "rgba(0,255,0,.5)";
+      return "rgba(0,255,0,"+opacity+")";
    } else if(desc.indexOf("sun") > -1){
-      return "rgba(255,255,0,.5)";
+      return "rgba(255,255,0,"+opacity+")";
    } else if(desc.indexOf("cloud") > -1 ||
              desc.indexOf("fog") > -1){
-      return "rgba(100,100,100,.5)";
+      return "rgba(100,100,100,"+opacity+")";
    } else if(desc.indexOf("clear") > -1){
       return "rgba(0,0,0,0)";
    } else if(desc.indexOf("loading") > -1){
@@ -371,18 +376,19 @@ let staticWeatherStyle = new Style({
 
 function weatherStyle(f, r) {
    const props = f.getProperties();
-   const weatherColor = getColorForDescription(props['sfc' + DAY]);
+   const weatherColor = getColorForDescription(props['sfc' + DAY], props['precip']+DAY);
    staticWeatherStyle.getImage().getFill().setColor(weatherColor);
    staticWeatherStyle.setImage(staticWeatherStyle.getImage().clone());
    return staticWeatherStyle;
 }
-function getIntersectingDescription(f){
+function getIntersectingInfo(f){
    const c = f.getGeometry().getCoordinates();
    const w = weatherLayer.getSource().getClosestFeatureToCoordinate(c); 
-   if(w == null){
-      return "loading";
+   if(w === null){
+      return {desc : "loading"};
    }
-   return w.getProperties()['sfc' + DAY]
+   const wprops = w.getProperties()
+   return {desc : wprops['sfc' + DAY], precip : wprops['precip' + DAY]}
 }
 let staticClimbStyle = new Style({
    image : new Circle({
@@ -401,8 +407,8 @@ let staticText = new Text({
 });
 
 function climbStyle(f){
-   let desc = getIntersectingDescription(f);
-   staticClimbStyle.getImage().getFill().setColor(getColorForDescription(desc));
+   let info = getIntersectingInfo(f);
+   staticClimbStyle.getImage().getFill().setColor(getColorForDescription(info.desc, info.precip));
    staticClimbStyle.setImage(staticClimbStyle.getImage().clone());
    if(f.get('features').length === 1){
       staticClimbStyle.setText(undefined);
@@ -421,8 +427,8 @@ let staticPeakStyle = new Style({
    })
 });
 function peakStyle(f){
-   let desc = getIntersectingDescription(f);
-   staticPeakStyle.getImage().getFill().setColor(getColorForDescription(desc));
+   let info = getIntersectingInfo(f);
+   staticPeakStyle.getImage().getFill().setColor(getColorForDescription(info.desc, info.precip));
    staticPeakStyle.setImage(staticPeakStyle.getImage().clone());
    if(f.get('features').length === 1){
       staticPeakStyle.setText(undefined);
