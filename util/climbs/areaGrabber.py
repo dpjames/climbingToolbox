@@ -10,6 +10,9 @@ OUTFILE = "climbAreasRaw"
 CA_ROOT = "https://www.mountainproject.com/area/105708959/california"
 WA_ROOT = "https://www.mountainproject.com/area/105708966/washington"
 OR_ROOT = "https://www.mountainproject.com/area/105708965/oregon"
+CO_ROOT = "https://www.mountainproject.com/area/105708956/colorado"
+NV_ROOT = "https://www.mountainproject.com/area/105708961/nevada"
+UT_ROOT = "https://www.mountainproject.com/area/105708957/utah"
 T_ROOT = "https://www.mountainproject.com/area/108471326/olympics-pacific-coast"
 
 ####################################################
@@ -63,21 +66,26 @@ def linkToRoots(link, prefix):
 ####################################################
 threadList = []
 states = [
-        {"prefix" : "CA", "url" : CA_ROOT},
-        {"prefix" : "WA", "url" : WA_ROOT},
-        {"prefix" : "OR", "url" : OR_ROOT},
+        {"prefix" : "CO", "url" : CO_ROOT},
+        #{"prefix" : "NV", "url" : NV_ROOT},
+        {"prefix" : "UT", "url" : UT_ROOT},
 ]
 #roots = linkToRoots("https://www.mountainproject.com/area/106150395/olympic-national-park", prefix)
+runningThreads = 0
 for state in states:
     prefix = state['prefix']
     url = state['url']
     roots = linkToRoots(url, prefix)
     print "starting " + prefix
     for root in roots:
+        if runningThreads > 9:
+            threadList.pop(0).join()
+            runningThreads-=1
         t = Thread(target=threadStart,args=(root,))
         threadList.append(t)
         t.start()
+        runningThreads+=1
     for t in threadList:
         t.join()
-        print "joined"
+        runningThreads-=1
     print "all done with " + prefix
