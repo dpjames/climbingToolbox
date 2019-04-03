@@ -9,7 +9,8 @@ class Home extends React.Component {
             be developing it more in my free time.
             As of right now the main funcitonality centers around weather forecasts.
             Specifically weather forecasts for rock climbing areas and summits. 
-            Hopefully the interface is self explanatory
+            This project aims to answer the question "where will the weather be good enough to climb this weekend?".
+            Hopefully the interface is self-explanatory
             but if not I'd 
             love feedback. 
             The arrows let you step through time. Clicking on the map will let you view information about where you clicked, 
