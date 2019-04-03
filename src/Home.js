@@ -17,8 +17,8 @@ class Home extends React.Component {
             </div>
             <br></br>
             <div>
-            <strong>Only Washington, Oregon, and CA have climbing data right now (this will soon be updated to include the entire west).
-            Weather data is only from Eastern CO border to the west coast. Eventually it will be updated to include the entire US.</strong>
+            <strong>Only Washington, Oregon, and California have climbing data right now (this will soon be updated to include the entire west).
+            Weather data is only from Eastern Colorado border to the west coast. Eventually it will be updated to include the entire US.</strong>
             </div>
             <br></br>
             Shoot me emails at climbingToolbox@gmail.com
