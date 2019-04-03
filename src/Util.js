@@ -44,7 +44,7 @@ class NavBar extends React.Component {
 class TitleBar extends React.Component {
    render(){
       return (
-         <div id="titleBar">CT</div>
+         <div id="titleBar"><strong>CT</strong></div>
       );
    }
 }
