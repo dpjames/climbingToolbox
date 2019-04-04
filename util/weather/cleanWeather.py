@@ -37,6 +37,7 @@ for f in weather['features']:
     newF['geometry'] = f['geometry']['geometries'][0]
     del newF['@context']
     fp = f['properties']
+    print fp
     for i in range(len(fp['periods'])):
         cp = fp['periods'][i]
         newF['properties']['isDay' + str(i)] = cp['isDaytime']
@@ -44,6 +45,8 @@ for f in weather['features']:
         newF['properties']['sfc' + str(i)] = cp['shortForecast']
         newF['properties']['sTime' + str(i)] = cp['startTime']
         newF['properties']['precip' + str(i)] = findPrecip(cp['detailedForecast'])
+        newF['properties']['wd' + str(i)] = cp['windDirection']
+        newF['properties']['ws' + str(i)] = cp['windSpeed']
     del f
     del newF['properties']['periods']
     newFeats.append(newF);
