@@ -1,9 +1,5 @@
 import requests 
 
-API_KEY = "yYjoyZGFKWGkgEja1VXvcwM09BwVxQBr"
-FORECAST_BASE_URL = "http://dataservice.accuweather.com/forecasts/v1/daily/15day/WHERE?apikey=" + API_KEY
-LOCATION_KEY_BASE_URL = "http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?q=LAT,LON&apikey="+API_KEY
-
 URL_BASE="https://api.weather.gov/points/LAT,LON"
 STEPS = 90
 
