@@ -3,7 +3,7 @@ import './index.css';
 import 'ol/ol.css';
 
 import {Map, View} from 'ol';
-import {Text, RegularShape, Style, Circle, Fill, Stroke} from 'ol/style'
+import {Text, RegularShape, Icon, Style, Circle, Fill, Stroke} from 'ol/style'
 import {fromLonLat} from 'ol/proj';
 import {Vector as VectorLayer, Tile} from 'ol/layer'
 import {Cluster, Vector, XYZ} from 'ol/source'
@@ -26,7 +26,7 @@ library.add(faArrowDown)
 library.add(faArrowLeft)
 library.add(faTimes)
 
-//const GEO_HOST = "http://raspberrypi68080";
+//const GEO_HOST = "http://raspberrypi:8080";
 //const MAX_RES = 1000;
 //const GEO_HOST = "http://66.214.192.84:8080";
 const GEO_HOST = "http://davidpjames.com:8080";
@@ -195,7 +195,7 @@ class BetaWindow extends React.Component {
       this.showFrame = this.showFrame.bind(this);
       this.state={
          show : false,
-         activeIndex : 0,
+         activeIndex : 1,
          spurl : "",
          mpurl : "",
          url : "",
@@ -251,7 +251,7 @@ class WeatherMap extends React.Component {
       if(rockF != null){
          mpurl = rockF.getProperties().url;
       }
-      let curl = this.beta.state.url  === "" ? 'spurl' : this.beta.state.url;
+      let curl = this.beta.state.url  === "" ? 'mpurl' : this.beta.state.url;
       this.beta.setState({show : true, spurl : spurl, mpurl : mpurl, url : curl});
    }
    render(){
@@ -306,6 +306,7 @@ class MapCallout extends React.Component {
             </div>
             <div><strong>Weather: </strong>       {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['sfc' + DAY]}</div>
             <div><strong>Chance Precip:</strong>  {this.state.weather === null ? "N/A" : this.state.weather.getProperties()['precip' + DAY]}</div>
+            <div><strong>Wind:</strong>  {this.state.weather === null ? "N/A" : (this.state.weather.getProperties()['ws' + DAY] + " " + this.state.weather.getProperties()['wd' + DAY])}</div>
             <div><strong>Nearest Climb: </strong> {this.state.climb === null ? "N/A" : this.state.climb.getProperties().name}</div>
             <div><strong>Nearest Peak: </strong>  {this.state.peak === null ? "N/A" : this.state.peak.getProperties().NAME}</div>
             <Button extraClass="betaButton" text="Show Beta" onClick={() => this.props.showBeta(this.state.peak, this.state.climb)} />
@@ -379,16 +380,23 @@ function weatherStyle(f, r) {
    const weatherColor = getColorForDescription(props['sfc' + DAY], props['precip'+DAY]);
    staticWeatherStyle.getImage().getFill().setColor(weatherColor);
    staticWeatherStyle.setImage(staticWeatherStyle.getImage().clone());
-   return staticWeatherStyle;
+   staticWindStyle.setImage(getWindImage(props['wd'+DAY], props['ws'+DAY]));
+   return [staticWeatherStyle, staticWindStyle];
 }
 function getIntersectingInfo(f){
    const c = f.getGeometry().getCoordinates();
    const w = weatherLayer.getSource().getClosestFeatureToCoordinate(c); 
+   
    if(w === null){
       return {desc : "loading"};
    }
    const wprops = w.getProperties()
-   return {desc : wprops['sfc' + DAY], precip : wprops['precip' + DAY]}
+   return {
+      desc : wprops['sfc' + DAY],
+      precip : wprops['precip' + DAY],
+      windDirection : wprops['wd' + DAY],
+      windSpeed : Number(wprops['ws' + DAY].split(" ")[0])
+   }
 }
 let staticClimbStyle = new Style({
    image : new Circle({
@@ -397,6 +405,23 @@ let staticClimbStyle = new Style({
       radius : 15
    })
 });
+let staticWindStyle = new Style({
+   //image : new RegularShape({
+   //   points : 3,
+   //   fill : new Fill({color : "black"}),
+   //   stroke : new Stroke({width : 1, color : "white"}),
+   //   radius : 15,
+   //})
+   image : new Icon({
+      anchor : [.5,.5],
+      size : [3,20],
+      src : "/wind.jpg",
+      rotation : Math.PI/2,
+   })
+});
+
+
+
 let staticText = new Text({
    font: '20px Calibri,sans-serif',
    fill: new Fill({ color: '#000' }),
@@ -405,7 +430,68 @@ let staticText = new Text({
    }), 
    text : ""
 });
+const POS_COMBOS = ["WNW","SW","SSW","ESE","NE","NNE"]
+const MOD_ANGLES = {
+   "NW": Math.PI/8,
+   "W": Math.PI/4,
+   "E": Math.PI/4,
+   "SW": Math.PI/8,
+   "SE": Math.PI/8,
+   "NE": Math.PI/8,
+}
+const PRIM_ANGLES = {
+   "N" : Math.PI,
+   "E" : Math.PI/2 * 3,
+   "S" : 0,
+   "W" : Math.PI/2,
+}
+function calcWindAngle(dir){
+   const primaryDirection = dir.charAt(0);
+   let primaryAngle = PRIM_ANGLES[primaryDirection] 
+   const modifier = dir.substring(1);
+   let modAngle = modifier.length === 0 ? 0 : MOD_ANGLES[modifier]
 
+   if(POS_COMBOS.indexOf(dir) === -1){
+      modAngle *= -1;
+   }
+
+   const totalAngle = primaryAngle + modAngle;
+   return totalAngle;
+}
+function calcWindSize(speed){
+   speed = speed + ""
+   const toks = speed.split(" ");
+   const slow = Number(toks[0]);
+   let high = slow;
+   const wspeed = (slow + high) / 2;
+   let size = [4,42]
+   if(wspeed <=5){
+      size = [4, 7];
+   } else if (wspeed <= 15){
+      size = [4, 14];
+   } else if (wspeed <=30){
+      size = [4, 21];
+   } else if (wspeed <= 45){
+      size = [4, 28];
+   } else if (wspeed <= 65){
+      size = [4, 35];
+   }
+   return {size : size,  anchor : [.5, -1 * (15 / size[1])]}
+}
+function getWindImage(direction, speed){
+   if(direction === undefined){
+      return undefined
+   }
+   const angle = calcWindAngle(direction);
+   const size = calcWindSize(speed);
+   const bar = new Icon({
+      anchor : size.anchor,
+      size : size.size,
+      src : "wind.jpg",
+      rotation : angle,
+   });
+   return bar;
+}
 function climbStyle(f){
    let info = getIntersectingInfo(f);
    staticClimbStyle.getImage().getFill().setColor(getColorForDescription(info.desc, info.precip));
@@ -416,7 +502,8 @@ function climbStyle(f){
       staticText.setText(f.get('features').length.toString());
       staticClimbStyle.setText(staticText);
    }
-   return staticClimbStyle
+   staticWindStyle.setImage(getWindImage(info.windDirection, info.windSpeed))
+   return [staticClimbStyle, staticWindStyle]
 }
 let staticPeakStyle = new Style({
    image : new RegularShape({
@@ -436,7 +523,8 @@ function peakStyle(f){
       staticText.setText(f.get('features').length.toString());
       staticPeakStyle.setText(staticText);
    }
-   return staticPeakStyle
+   staticWindStyle.setImage(getWindImage(info.windDirection, info.windSpeed))
+   return [staticPeakStyle, staticWindStyle]
 }
 function createClimbLayer(){
    const src = new Vector({

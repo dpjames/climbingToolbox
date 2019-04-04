@@ -44,6 +44,8 @@ for f in weather['features']:
         newF['properties']['sfc' + str(i)] = cp['shortForecast']
         newF['properties']['sTime' + str(i)] = cp['startTime']
         newF['properties']['precip' + str(i)] = findPrecip(cp['detailedForecast'])
+        newF['properties']['wd' + str(i)] = cp['windDirection']
+        newF['properties']['ws' + str(i)] = cp['windSpeed']
     del f
     del newF['properties']['periods']
     newFeats.append(newF);
