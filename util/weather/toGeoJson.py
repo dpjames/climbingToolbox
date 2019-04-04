@@ -1,8 +1,24 @@
 import json
         
+######################################################
+#  This script transforms the downloaded jsons       #
+#  into a single geojson object                      #
+######################################################
+
+######################################################
+#              GLOBALS BEGIN                         #
+######################################################
+#input file
 F_NAME = "outfile"
+#output file
 OUT_GEOJSON = F_NAME+".geojson"
+#entry delimiter
 DELIM = "==="
+######################################################
+#                GLOBALS END                         #
+######################################################
+
+
 f = open(F_NAME, "r");
 total = ""
 for l in f:
@@ -10,6 +26,7 @@ for l in f:
 split = total.split(DELIM)
 f.close()
 
+#NOTE: opted to manually encode the json and write as we go because this was originally run on a raspberry pi with very little ram.
 f = open(OUT_GEOJSON, "w+")
 f.write('{"type" : "featureCollection", "features" : [')
 

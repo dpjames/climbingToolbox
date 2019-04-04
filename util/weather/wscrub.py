@@ -1,22 +1,65 @@
+
+######################################################
+#      this script downloads the weather data        #
+#      from api.weather.gov and writes it to outfile #
+######################################################
 import requests 
-
 URL_BASE="https://api.weather.gov/points/LAT,LON"
-STEPS = 90
+######################################################
+#              GLOBALS BEGIN                         #
+######################################################
 
+#The next 4 lines describe a lat/lon bounding box
 x1 = 48.851162
 x2 = 32.083738
 y1 = -125.208169
 y2 = -101.928904
-#y2 = -113.788805
-loclist = []
 
+#steps splits the above bounding box into a grid  with dimensions STEPS x STEPS
+STEPS = 90
+
+# string to seperate weather entries. very important.
+DELIM = "\n===\n"
+######################################################
+#                GLOBALS END                         #
+######################################################
+
+
+######################################################
+#                FUNCTIONS BEGIN                     #
+######################################################
+
+############################################
+# builds a no data entry                   #
+# can probably be removed                  #
+############################################
 def buildEntry(lat,lon,code):
     return str(lat) + "," + str(lon) + ":" + str(code)
-
+############################################
+#  determines the lat/lon delta to use    #
+#  based on the start value and end value #
+############################################
 def getDelta(s,e):
     r = e - s
     return r/(STEPS)
 
+######################################################
+#                FUNCTIONS END                       #
+######################################################
+
+
+
+######################################################
+#                  SCRIPT BEGIN                      #
+#                                                    #
+# the algorithm steps through a defined bounding box #
+# by a calculated delta. for each point on the       #
+# corrosponding grid, the weather is grabbed from    #
+# api.weather.gov. if the request is empty or fails, #
+# then NO_DATA is output to the outfile.             #
+# The delimiter "\n===\n" is important for this      #
+# pipeline                                           #
+######################################################
 latStart = min(x1,x2)
 latEnd = max(x1,x2)
 lonStart = min(y1,y2)
@@ -41,7 +84,7 @@ while clat <= latEnd:
             else:
                 r = requests.get(url=f_url)
                 outfile.write(r.text)
-            outfile.write("\n===\n")
+            outfile.write(DELIM)
         except Exception as e:
             print e
         clon+=clonDelta

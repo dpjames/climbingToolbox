@@ -1,0 +1,15 @@
+The files in this folder are a pipeline to
+1. wscrub.py --  download the weather data
+2. toGeoJson.py -- format the weather data into a geojson
+3. cleanWeather.py -- prepare the data to be turned into a shapefile
+
+The pipeline looks like this:
+wscrub.py outputs "outfile"
+toGeoJson.py outputs "outfile.geojson"
+cleanWeather.pu outputs "weather.geojson"
+
+Then run 
+
+ogr2ogr -f "ESRI Shapefile" -a_srs EPSG:4326 ../../gis/weather/weather.shp weather.geojson
+
+to convert it into a shape file for use with geoserver and the website.

@@ -1,6 +1,16 @@
 import json
 import re
 
+######################################################
+# This script formats the weather json to a shapefile#
+# friendly form. largely linearizing the arrays to be#
+# less than 255 chars each.                          #
+######################################################
+
+
+######################################################
+#                FUNCTIONS BEGIN                     #
+######################################################
 def findPrecip(s):
     s = s.lower()
     if "%" in s:
@@ -23,6 +33,11 @@ def findPrecip(s):
     else:
         return 0
 
+######################################################
+#                FUNCTIONS END                       #
+######################################################
+
+#input file name
 fname = "outfile.geojson"
 
 f = open(fname, "r")
@@ -37,6 +52,7 @@ for f in weather['features']:
     newF['geometry'] = f['geometry']['geometries'][0]
     del newF['@context']
     fp = f['properties']
+    #for each day in forecast, extract the data to top level property
     for i in range(len(fp['periods'])):
         cp = fp['periods'][i]
         newF['properties']['isDay' + str(i)] = cp['isDaytime']
@@ -47,7 +63,7 @@ for f in weather['features']:
         newF['properties']['wd' + str(i)] = cp['windDirection']
         newF['properties']['ws' + str(i)] = cp['windSpeed']
     del f
-    del newF['properties']['periods']
+    del newF['properties']['periods'] # remove unneeded data
     newFeats.append(newF);
 
 weather['features'] = newFeats
