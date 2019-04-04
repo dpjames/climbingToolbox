@@ -1,0 +1,3 @@
+These are utility scripts to download data and format it for geoserver.
+Weather contains weather scripts to be run every day.
+Climbs contains climb grabbing scripts that will only ever be run once.
