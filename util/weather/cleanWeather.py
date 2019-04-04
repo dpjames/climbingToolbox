@@ -37,7 +37,6 @@ for f in weather['features']:
     newF['geometry'] = f['geometry']['geometries'][0]
     del newF['@context']
     fp = f['properties']
-    print fp
     for i in range(len(fp['periods'])):
         cp = fp['periods'][i]
         newF['properties']['isDay' + str(i)] = cp['isDaytime']
